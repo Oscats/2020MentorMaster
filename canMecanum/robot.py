@@ -6,13 +6,11 @@
 
 import wpilib
 from wpilib.drive import MecanumDrive
-from wpilib.interfaces import GenericHID
-
-Hand = GenericHID.Hand
 # Import network tables
 from networktables import NetworkTables
 # Import Rev Hardware for Can
 import rev
+import ctre
 
 
 
@@ -31,10 +29,10 @@ class MyRobot(wpilib.TimedRobot):
         
         """Robot initialization function.  The Low level is to use the brushless function on the controllers."""
         if wpilib.RobotBase.isSimulation():
-            self.frontLeftMotor = wpilib.Spark(self.frontLeftChannel)
-            self.rearLeftMotor = wpilib.Spark(self.rearLeftChannel)
-            self.frontRightMotor = wpilib.Spark(self.frontRightChannel)
-            self.rearRightMotor = wpilib.Spark(self.rearRightChannel)
+            self.frontLeftMotor = ctre.WPI_VictorSPX(self.frontLeftChannel)
+            self.rearLeftMotor = ctre.WPI_VictorSPX(self.rearLeftChannel)
+            self.frontRightMotor = ctre.WPI_VictorSPX(self.frontRightChannel)
+            self.rearRightMotor = ctre.WPI_VictorSPX(self.rearRightChannel)
 
         else:    
             self.frontLeftMotor = rev.CANSparkMax(self.frontLeftChannel, rev.CANSparkMaxLowLevel.MotorType.kBrushless)
@@ -43,21 +41,29 @@ class MyRobot(wpilib.TimedRobot):
             self.rearRightMotor = rev.CANSparkMax(self.rearRightChannel, rev.CANSparkMaxLowLevel.MotorType.kBrushless)
 
         # invert the left side motors
-        self.frontLeftMotor.setInverted(True)
+        self.rearRightMotor.setInverted(False)
 
         # you may need to change or remove this to match your robot
-        self.rearLeftMotor.setInverted(True)
+        self.rearLeftMotor.setInverted(False)
 
         self.drive = MecanumDrive(
+            
+            
             self.frontLeftMotor,
-            self.rearLeftMotor,
             self.frontRightMotor,
+            self.rearLeftMotor,
+            
             self.rearRightMotor,
+            
+            
+            
+            
         )
 
         self.drive.setExpiration(0.1)
 
         self.stick = wpilib.XboxController(self.joystickChannel)
+        self.lift = ctre.WPI_VictorSPX(6)
     
     def autonomousInit(self):
         """Runs Once during auto"""
@@ -65,7 +71,7 @@ class MyRobot(wpilib.TimedRobot):
     def autonomousPeriodic(self):
         """Runs Periodically during auto"""
         self.drive.driveCartesian(
-            .5, 0, .5, 0
+            0.5, 0, 0, 0
         )
 
     def teleopInit(self):
@@ -78,8 +84,9 @@ class MyRobot(wpilib.TimedRobot):
         # Use the joystick X axis for lateral movement, Y axis for forward movement, and Z axis for rotation.
         # This sample does not use field-oriented drive, so the gyro input is set to zero.
         self.drive.driveCartesian(
-            self.stick.getRawAxis(1), self.stick.getRawAxis(3), self.stick.getRawAxis(2), 0
+            self.stick.getRawAxis(2), self.stick.getRawAxis(3), self.stick.getRawAxis(0), 0
         )
+        self.lift.set(self.stick.getRawButton(1))
 
 
 

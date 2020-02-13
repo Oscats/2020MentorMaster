@@ -2,6 +2,7 @@ import wpilib
 from wpilib import drive
 from networktables import NetworkTables
 from wpilib.controller import PIDController
+from wpilib import SmartDashboard as smart_dashboard
 import ctre
 
 import navx
@@ -24,6 +25,7 @@ class MyRobot(wpilib.TimedRobot):
     kToleranceDegrees = 2.0
 
     def robotInit(self):
+        #self.smartDashboard = smart_dashboard
         self.sd = NetworkTables.getTable("SmartDashboard")
         self.left_motor = ctre.WPI_TalonSRX(0)
         self.right_motor = ctre.WPI_TalonSRX(1)
@@ -31,6 +33,7 @@ class MyRobot(wpilib.TimedRobot):
         self.stick = wpilib.Joystick(0)
         self.navx = navx.AHRS.create_spi()
         # self.ahrs = AHRS.create_i2c()
+        
 
         turnController = PIDController(
             self.kP, self.kI, self.kD, period = 1.0
@@ -38,6 +41,7 @@ class MyRobot(wpilib.TimedRobot):
 
         self.turnController = turnController
         self.rotateToAngleRate = 5
+        smart_dashboard.putData("PID COntroller", self.turnController)
     def autonomousInit(self):
          """Executed at the start of teleop mode"""
          self.drive.setSafetyEnabled(True)
