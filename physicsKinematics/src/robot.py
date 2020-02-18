@@ -47,6 +47,9 @@ class MyRobot(wpilib.TimedRobot):
         self.right_encoder = wpilib.Encoder(3, 4)
 
         self.kinematics = DifferentialDriveKinematics(TRACK_WIDTH)
+        self.chassis_speeds = ChassisSpeeds()
+        self.chassis_speeds.vx = 0.0
+        self.chassis_speeds.omega = 0.0
 
         if is_sim:
             self.physics = physics.PhysicsEngine()
@@ -69,26 +72,28 @@ class MyRobot(wpilib.TimedRobot):
     def autonomousPeriodic(self):
         # Get WheelSPeeds out of Inverse Kinematics...
         # XXX: https://github.com/robotpy/robotpy-wpilib/issues/635
-        chassis_speeds = ChassisSpeeds()
-        chassis_speeds.vx = 2.0
-        chassis_speeds.omega = 3.0
-        speeds = self.kinematics.toWheelSpeeds(chassis_speeds)
+        
+        #speeds = self.kinematics.toWheelSpeeds(self.chassis_speeds)
         # Uncomment to see wheel speed
         # print(speeds.left,  speeds.right)
 
         # Get Chassis Speeds using Kinematics
-        sampleWheelSpeeds = DifferentialDriveWheelSpeeds()
-        sampleWheelSpeeds.left = 2.0
-        sampleWheelSpeeds.right = 2.0
+        #sampleWheelSpeeds = DifferentialDriveWheelSpeeds()
+        #sampleWheelSpeeds.left = 2.0
+        #sampleWheelSpeeds.right = 2.0
 
-        speeds2 = self.kinematics.toChassisSpeeds(sampleWheelSpeeds)
+        #speeds2 = self.kinematics.toChassisSpeeds(sampleWheelSpeeds)
 
-        print(speeds2.vx, speeds2.omega)
+        #print(speeds2.vx, speeds2.omega)
 
         if self.timer.get() < 2.0:
-            self.drive.arcadeDrive(-1.0, 0)
+            self.chassis_speeds.vx = -.5
+            
         else:
-            self.drive.arcadeDrive(0, 0)
+            self.chassis_speeds.vx = 0.0
+        
+        speeds = self.kinematics.toWheelSpeeds(self.chassis_speeds)
+        self.drive.tankDrive(speeds.left, speeds.right)
 
     def teleopPeriodic(self):
         """Called when operation control mode is enabled"""
