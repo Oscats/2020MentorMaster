@@ -50,7 +50,7 @@ class MyRobot(wpilib.TimedRobot):
 
 
         
-        self.turnController.setSetpoint(0)
+        self.turnController.setSetpoint(5)
         pidOutput = self.turnController.calculate(self.navx.getAngle())
 
         
