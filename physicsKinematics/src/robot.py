@@ -5,6 +5,7 @@ from wpilib.kinematics import DifferentialDriveKinematics
 from wpilib.kinematics import DifferentialDriveWheelSpeeds
 from wpilib.kinematics import ChassisSpeeds
 import wpilib.drive
+import ctre
 
 if wpilib.RobotBase.isSimulation():
     is_sim = True
@@ -33,7 +34,7 @@ class MyRobot(wpilib.TimedRobot):
         self.r_motor = wpilib.Jaguar(2)
 
         # Position gets automatically updated as robot moves
-        self.gyro = wpilib.AnalogGyro(1)
+        self.gyro = wpilib.AnalogGyro(0)
 
         self.drive = wpilib.drive.DifferentialDrive(self.l_motor, self.r_motor)
 
@@ -87,13 +88,15 @@ class MyRobot(wpilib.TimedRobot):
         #print(speeds2.vx, speeds2.omega)
 
         if self.timer.get() < 2.0:
+            speeds = self.kinematics.toWheelSpeeds(self.chassis_speeds)
             self.chassis_speeds.vx = -.5
+            self.drive.tankDrive(speeds.left, speeds.right)
             
         else:
-            self.chassis_speeds.vx = 0.0
+            self.drive.tankDrive(-.5, .5)
         
-        speeds = self.kinematics.toWheelSpeeds(self.chassis_speeds)
-        self.drive.tankDrive(speeds.left, speeds.right)
+        
+        
 
     def teleopPeriodic(self):
         """Called when operation control mode is enabled"""

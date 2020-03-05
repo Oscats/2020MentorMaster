@@ -1,5 +1,6 @@
 import wpilib
 from wpilib import AddressableLED
+from networktables import NetworkTables
 
 k_numberLEDs = 60
 
@@ -7,6 +8,7 @@ k_numberLEDs = 60
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
         """"Runs Once on Robot Code Start."""
+        #self.sd = NetworkTables.getTable("SmartDashboard")
         # Instantiate an LED Object on PWM pin 0.
         self.led = AddressableLED(0)
         # set the number of leds
@@ -29,22 +31,25 @@ class MyRobot(wpilib.TimedRobot):
         self.led.setData(self.left + self.right)
         # Finally, write the data to the LED strip (if this stays open, it will update automatically).
         self.led.start()
+        self.myColors = (0, 100, 0)
 
     def autonomousInit(self):
         """Runs Once during auto"""
         # By auto, we should have our alliance color, let's grab it.
-        m_alliance = wpilib.DriverStation.Alliance(0)
-
-        # reset n
+        m_alliance = self.ds.getAlliance()
+        #m_alliance= str(m_alliance)
+        #print(type(m_alliance))
+       # print(m_alliance)
+        # reset
         i = 0
         # set the leds to the alliance color.
         for d in self.left:
             if m_alliance == m_alliance.kRed:
-                self.left[i].setRGB(100, 0, 0)
-                self.right[i].setRGB(100, 0, 0)
-            elif m_alliance == m_alliance.kBlue:
-                self.left[i].setRGB(0, 0, 100)
-                self.right[i].setRGB(0, 0, 100)
+                self.left[i].setRGB(255, 0, 0)
+                self.right[i].setRGB(255, 0, 0)
+            elif m_alliance ==  m_alliance.kBlue:
+                self.left[i].setRGB(0, 0, 255)
+                self.right[i].setRGB(0, 0, 255)
             else:
                 self.left[i].setRGB(100, 0, 100)
                 self.right[i].setRGB(100, 0, 100)
@@ -64,7 +69,7 @@ class MyRobot(wpilib.TimedRobot):
         """Runs the motors with Mecanum drive."""
         # Maybe, we want to create a rainbow.  HSV colorspace works well for this.
 
-        hue = (self.rainbow + (self.i * 180 / 30)) % 180
+        '''hue = (self.rainbow + (self.i * 180 / 30)) % 180
         self.left[self.i].setHSV(int(hue), 255, 128)
         self.right[self.i].setHSV(int(hue), 255, 128)
         if self.i < 29:
@@ -75,7 +80,8 @@ class MyRobot(wpilib.TimedRobot):
         self.rainbow += 3
         self.rainbow %= 180
 
-        # Write color to the buffer
+        # Write color to the buffer'''
+        self.left[7].setRGB(self.myColors[0], self.myColors[0],self.myColors[0],)
         self.led.setData(self.left + self.right)
 
 

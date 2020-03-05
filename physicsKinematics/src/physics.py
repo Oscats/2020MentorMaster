@@ -1,4 +1,4 @@
-#
+
 # TODO: This example has been updated for 2020, but still needs
 #       quite a bit of polish
 #
@@ -71,10 +71,10 @@ class PhysicsEngine(object):
         self.field = Field()
 
         # Motors
+        #self.l_motor = hal.simulation.SimDeviceSim("Talon RX[1]")
+        #self.r_motor = hal.simulation.SimDeviceSim("Talon RX[2])
         self.l_motor = hal.simulation.PWMSim(1)
-        
         self.r_motor = hal.simulation.PWMSim(2)
-        
 
         self.dio1 = hal.simulation.DIOSim(1)
         self.dio2 = hal.simulation.DIOSim(2)
@@ -83,6 +83,8 @@ class PhysicsEngine(object):
         self.motor = hal.simulation.PWMSim(4)
 
         self.position = 0
+
+        self.gyro = hal.simulation.AnalogGyroSim(0)
 
         # Change these parameters to fit your robot!
         bumper_width = 3.25 * units.inch
@@ -111,9 +113,10 @@ class PhysicsEngine(object):
         """
 
         # Simulate the drivetrain
-        l_motor = self.l_motor.getSpeed()
+        l_motorOutput = self.l_motor.getDouble('Motor Output')
+        l_motor = l_motorOutput.get()
+        #l_motor = self.l_motor.getSpeed()
         r_motor = self.r_motor.getSpeed()
-
 
         x, y, angle = self.drivetrain.get_distance(l_motor, r_motor, tm_diff)
         self.field.distance_drive(x, y, angle)
@@ -138,3 +141,4 @@ class PhysicsEngine(object):
         self.dio1.setValue(switch1)
         self.dio2.setValue(switch2)
         self.ain2.setVoltage(self.position)
+        self.gyro.getAngle()

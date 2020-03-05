@@ -28,17 +28,17 @@ class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
         
         """Robot initialization function.  The Low level is to use the brushless function on the controllers."""
-        if wpilib.RobotBase.isSimulation():
+        '''if wpilib.RobotBase.isSimulation():
             self.frontLeftMotor = ctre.WPI_VictorSPX(self.frontLeftChannel)
             self.rearLeftMotor = ctre.WPI_VictorSPX(self.rearLeftChannel)
             self.frontRightMotor = ctre.WPI_VictorSPX(self.frontRightChannel)
             self.rearRightMotor = ctre.WPI_VictorSPX(self.rearRightChannel)
 
-        else:    
-            self.frontLeftMotor = rev.CANSparkMax(self.frontLeftChannel, rev.CANSparkMaxLowLevel.MotorType.kBrushless)
-            self.rearLeftMotor = rev.CANSparkMax(self.rearLeftChannel, rev.CANSparkMaxLowLevel.MotorType.kBrushless)
-            self.frontRightMotor = rev.CANSparkMax(self.frontRightChannel, rev.CANSparkMaxLowLevel.MotorType.kBrushless)
-            self.rearRightMotor = rev.CANSparkMax(self.rearRightChannel, rev.CANSparkMaxLowLevel.MotorType.kBrushless)
+        else: '''   
+        self.frontLeftMotor = rev.CANSparkMax(self.frontLeftChannel, rev.CANSparkMaxLowLevel.MotorType.kBrushless)
+        self.rearLeftMotor = rev.CANSparkMax(self.rearLeftChannel, rev.CANSparkMaxLowLevel.MotorType.kBrushless)
+        self.frontRightMotor = rev.CANSparkMax(self.frontRightChannel, rev.CANSparkMaxLowLevel.MotorType.kBrushless)
+        self.rearRightMotor = rev.CANSparkMax(self.rearRightChannel, rev.CANSparkMaxLowLevel.MotorType.kBrushless)
 
         # invert the left side motors
         self.rearRightMotor.setInverted(False)
