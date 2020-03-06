@@ -31,7 +31,7 @@ class MyRobot(wpilib.TimedRobot):
         self.led.setData(self.left + self.right)
         # Finally, write the data to the LED strip (if this stays open, it will update automatically).
         self.led.start()
-        self.myColors = (0, 100, 0)
+        self.myColors = {'red':(200, 0, 0), 'green':(0,200,0),'blue':(0,0,200)}
 
     def autonomousInit(self):
         """Runs Once during auto"""
@@ -78,10 +78,18 @@ class MyRobot(wpilib.TimedRobot):
             self.i = 0
 
         self.rainbow += 3
-        self.rainbow %= 180
+        self.rainbow %= 180'''
 
-        # Write color to the buffer'''
-        self.left[7].setRGB(self.myColors[0], self.myColors[0],self.myColors[0],)
+        # Maybe we want just one color for the entire strand...
+        for d in self.left:
+            self.left[self.i].setRGB(self.myColors['red'][0],self.myColors['red'][1],self.myColors['red'][2])
+            self.right[self.i].setRGB(self.myColors['red'][0],self.myColors['red'][1],self.myColors['red'][2])
+        if self.i<= 28:
+            self.i+=1
+            
+
+
+        # Write color to the buffer
         self.led.setData(self.left + self.right)
 
 
