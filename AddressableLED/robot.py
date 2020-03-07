@@ -64,8 +64,11 @@ class MyRobot(wpilib.TimedRobot):
         """Runs Once during teleop"""
         self.i = 0
         self.rainbow = 0
+        self.c=0
+        self.t = 1
 
     def teleopPeriodic(self):
+        
         """Runs the motors with Mecanum drive."""
         # Maybe, we want to create a rainbow.  HSV colorspace works well for this.
 
@@ -80,12 +83,46 @@ class MyRobot(wpilib.TimedRobot):
         self.rainbow += 3
         self.rainbow %= 180'''
 
-        # Maybe we want just one color for the entire strand...
+         # Maybe we want just one color for the entire strand...
+        #i=0 #instatiate this outside of the teleop method to move up gradually.
+       
+        '''for d in self.left:
+            self.left[i].setRGB(self.myColors['red'][0],self.myColors['red'][1],self.myColors['red'][2])
+            self.right[i].setRGB(self.myColors['red'][0],self.myColors['red'][1],self.myColors['red'][2])
+            if self.i<= 28:
+                i+=1
+                break'''
+        
+        # Maybe we want to cycle through our colors...
+        colorScroll = list(self.myColors.values())[self.c]
+        firstColor = 1
         for d in self.left:
-            self.left[self.i].setRGB(self.myColors['red'][0],self.myColors['red'][1],self.myColors['red'][2])
-            self.right[self.i].setRGB(self.myColors['red'][0],self.myColors['red'][1],self.myColors['red'][2])
+            self.left[self.i].setRGB(colorScroll[0],colorScroll[1],colorScroll[2])
+            #self.right[i].setRGB(self.myColors['red'][0],self.myColors['red'][1],self.myColors['red'][2])
         if self.i<= 28:
             self.i+=1
+        else:
+            self.i = 0
+            if self.t== 1:
+                for d in self.left:
+                    self.left[self.i].setRGB(list(self.myColors.values())[firstColor][0],list(self.myColors.values())[firstColor][1],list(self.myColors.values())[firstColor][2])
+                    #self.right[self.i].setRGB(self.myColors['red'][0],self.myColors['red'][1],self.myColors['red'][2])
+                if self.i<= 28:
+                    self.i+=1
+                self.t += 1
+            if self.t == 2:
+                firstColor+=1
+                for d in self.left:
+                    self.left[self.i].setRGB(list(self.myColors.values())[firstColor][0],list(self.myColors.values())[firstColor][1],list(self.myColors.values())[firstColor][2])
+                    #self.right[self.i].setRGB(self.myColors['red'][0],self.myColors['red'][1],self.myColors['red'][2])
+                if self.i<= 28:
+                    self.i+=1
+                self.t == 0
+
+        if self.c < 2:
+            self.c += 1
+        else:
+            self.c = 0
             
 
 
