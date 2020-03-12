@@ -7,16 +7,28 @@
 
 import wpilib
 from rev.color import ColorSensorV3
-
+from rev.color import ColorMatch
 
 class MyRobot(wpilib.TimedRobot):
     """
         This is a simple example to show the values that can be read from the REV
         Color Sensor V3
     """
+        
 
     def robotInit(self):
         self.colorSensor = ColorSensorV3(wpilib.I2C.Port.kOnboard)
+        # Create and set the color match algorithm.
+        self.colorMatcher = ColorMatch()
+        self.kBlueTarget = wpilib.Color(0.143, 0.427, 0.429)
+        self.kGreenTarget = wpilib.Color(0.197, 0.561, 0.240)
+        self.kRedTarget = wpilib.Color(0.561, 0.232, 0.114)
+        self.kYellowTarget = wpilib.Color(0.361, 0.524, 0.113)
+        self.colorMatcher.addColorMatch(self.kBlueTarget)
+        self.colorMatcher.addColorMatch(self.kGreenTarget)
+        self.colorMatcher.addColorMatch(self.kRedTarget)
+        self.colorMatcher.addColorMatch(self.kYellowTarget)
+
 
     def robotPeriodic(self):
 
@@ -29,6 +41,7 @@ class MyRobot(wpilib.TimedRobot):
         # an object is the more light from the surroundings will bleed into the
         # measurements and make it difficult to accurately determine its color.
         detectedColor = self.colorSensor.getColor()
+        
 
         # The sensor returns a raw IR value of the infrared light detected.
         ir = self.colorSensor.getIR()
@@ -52,6 +65,21 @@ class MyRobot(wpilib.TimedRobot):
         proximity = self.colorSensor.getProximity()
 
         wpilib.SmartDashboard.putNumber("Proximity", proximity)
+        # We can also match the color to an input value.
+        # This is adapted from the Rev java example...
+        match = self.colorMatcher.matchClosestColor(detectedColor,1)
+        print (match)
+        if match == self.kBlueTarget:
+            colorString = "Blue"
+        elif match == self.kRedTarget:
+            colorString = "Red"
+        elif match == self.kGreenTarget:
+            colorString = "Green"
+        elif match == self.kYellowTarget:
+            colorString = "Yellow"
+        else:
+            colorString = "Unknown"
+        print(colorString)
 
 
 if __name__ == "__main__":
