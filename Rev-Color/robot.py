@@ -9,12 +9,12 @@ import wpilib
 from rev.color import ColorSensorV3
 from rev.color import ColorMatch
 
+
 class MyRobot(wpilib.TimedRobot):
     """
         This is a simple example to show the values that can be read from the REV
         Color Sensor V3
     """
-        
 
     def robotInit(self):
         self.colorSensor = ColorSensorV3(wpilib.I2C.Port.kOnboard)
@@ -29,7 +29,6 @@ class MyRobot(wpilib.TimedRobot):
         self.colorMatcher.addColorMatch(self.kRedTarget)
         self.colorMatcher.addColorMatch(self.kYellowTarget)
 
-
     def robotPeriodic(self):
 
         # The method GetColor() returns a normalized color value from the sensor and can be
@@ -41,7 +40,6 @@ class MyRobot(wpilib.TimedRobot):
         # an object is the more light from the surroundings will bleed into the
         # measurements and make it difficult to accurately determine its color.
         detectedColor = self.colorSensor.getColor()
-        
 
         # The sensor returns a raw IR value of the infrared light detected.
         ir = self.colorSensor.getIR()
@@ -67,8 +65,8 @@ class MyRobot(wpilib.TimedRobot):
         wpilib.SmartDashboard.putNumber("Proximity", proximity)
         # We can also match the color to an input value.
         # This is adapted from the Rev java example...
-        match = self.colorMatcher.matchClosestColor(detectedColor,1)
-        print (match)
+        match = self.colorMatcher.matchClosestColor(detectedColor, 1)
+        print(match)
         if match == self.kBlueTarget:
             colorString = "Blue"
         elif match == self.kRedTarget:
