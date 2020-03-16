@@ -1,6 +1,5 @@
 #
-# TODO: This example has been updated for 2020, but still needs
-#       quite a bit of polish
+# See the notes for the other physics sample
 #
 # See the documentation for more details on how this works
 #
@@ -15,90 +14,40 @@
 import math
 import hal.simulation
 
+from pyfrc.physics.core import PhysicsInterface
+from pyfrc.physics import drivetrains
 
-from pyfrc.physics import motor_cfgs, tankmodel
-from pyfrc.physics.units import units
 
+class PhysicsEngine:
+    """
+       Simulates a 4-wheel mecanum robot using Tank Drive joystick control 
+    """
 
-class Field:
-    # TODO: this will be in a future pyfrc release
-
-    def __init__(self):
-        self.device = hal.SimDevice("Field2D")
-        self.fx = self.device.createDouble("x", False, 0.0)
-        self.fy = self.device.createDouble("y", False, 0.0)
-        self.frot = self.device.createDouble("rot", False, 0.0)
-
-        self.x = 0
-        self.y = 0
-        self.angle = 0
-
-    def distance_drive(self, x, y, angle):
-        """Call this from your :func:`PhysicsEngine.update_sim` function.
-           Will update the robot's position on the simulation field.
-           
-           This moves the robot some relative distance and angle from
-           its current position.
-           
-           :param x:     Feet to move the robot in the x direction
-           :param y:     Feet to move the robot in the y direction
-           :param angle: Radians to turn the robot
+    def __init__(self, physics_controller):
         """
-        # TODO: use wpilib kinematics?
+            :param physics_controller: `pyfrc.physics.core.Physics` object
+                                       to communicate simulation effects to
+        """
 
-        self.angle += angle
-
-        c = math.cos(self.angle)
-        s = math.sin(self.angle)
-
-        self.x += x * c - y * s
-        self.y += x * s + y * c
-        
-        self.fx.set(self.x)
-        self.fy.set(self.y)
-        self.frot.set(math.degrees(self.angle))
-
-
-class PhysicsEngine(object):
-    """
-        Simulates a motor moving something that strikes two limit switches,
-        one on each end of the track. Obviously, this is not particularly
-        realistic, but it's good enough to illustrate the point
-    """
-
-    def __init__(self):
-
-        self.field = Field()
+        self.physics_controller = physics_controller
 
         # Motors
-        self.l_motor = hal.simulation.PWMSim(1)
-        
-        self.r_motor = hal.simulation.PWMSim(2)
-        
+        self.lf_motor = hal.simulation.PWMSim(1)
+        self.lr_motor = hal.simulation.PWMSim(2)
+        self.rf_motor = hal.simulation.PWMSim(3)
+        self.rr_motor = hal.simulation.PWMSim(4)
 
-        self.dio1 = hal.simulation.DIOSim(1)
-        self.dio2 = hal.simulation.DIOSim(2)
-        self.ain2 = hal.simulation.AnalogInSim(2)
+        # Gyro
+        self.gyro = hal.simulation.AnalogGyroSim(1)
 
-        self.motor = hal.simulation.PWMSim(4)
+        self.drivetrain = drivetrains.MecanumDrivetrain()
+        # Precompute the encoder constant
+        self.leftEncoder = hal.simulation.EncoderSim(0)
+        self.rightEncoder = hal.simulation.EncoderSim(1)
+        # -> encoder counts per revolution / wheel circumference
+        self.leftEncoder.setDistancePerPulse((360 / (0.5 * math.pi)))
+        self.rightEncoder.setDistancePerPulse((360 / (0.5 * math.pi)))
 
-        self.position = 0
-
-        # Change these parameters to fit your robot!
-        bumper_width = 3.25 * units.inch
-
-        # fmt: off
-        self.drivetrain = tankmodel.TankModel.theory(
-            motor_cfgs.MOTOR_CFG_CIM,           # motor configuration
-            110 * units.lbs,                    # robot mass
-            10.71,                              # drivetrain gear ratio
-            2,                                  # motors per side
-            22 * units.inch,                    # robot wheelbase
-            23 * units.inch + bumper_width * 2, # robot width
-            32 * units.inch + bumper_width * 2, # robot length
-            6 * units.inch,                     # wheel diameter
-        )
-        # fmt: on
 
     def update_sim(self, now, tm_diff):
         """
@@ -111,30 +60,18 @@ class PhysicsEngine(object):
         """
 
         # Simulate the drivetrain
-        l_motor = self.l_motor.getSpeed()
-        r_motor = self.r_motor.getSpeed()
+        lf_motor = self.lf_motor.getSpeed()
+        lr_motor = self.lr_motor.getSpeed()
+        rf_motor = self.rf_motor.getSpeed()
+        rr_motor = self.rr_motor.getSpeed()
 
+        speeds = self.drivetrain.calculate(lf_motor, lr_motor, rf_motor, rr_motor)
+        pose = self.physics_controller.drive(speeds, tm_diff)
+        # Update encoders
+        self.leftEncoder.getCount()
+        self.rightEncoder.getCount()
 
-        x, y, angle = self.drivetrain.get_distance(l_motor, r_motor, tm_diff)
-        self.field.distance_drive(x, y, angle)
-
-        # update position (use tm_diff so the rate is constant)
-        self.position += self.motor.getSpeed() * tm_diff * 3
-
-        # update limit switches based on position
-        if self.position <= 0:
-            switch1 = True
-            switch2 = False
-
-        elif self.position > 10:
-            switch1 = False
-            switch2 = True
-
-        else:
-            switch1 = False
-            switch2 = False
-
-        # set values here
-        self.dio1.setValue(switch1)
-        self.dio2.setValue(switch2)
-        self.ain2.setVoltage(self.position)
+        # Update the gyro simulation
+        # -> FRC gyros are positive clockwise, but the returned pose is positive
+        #    counter-clockwise
+        self.gyro.setAngle(-pose.rotation().degrees())
