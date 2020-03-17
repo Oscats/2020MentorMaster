@@ -91,7 +91,7 @@ class MyRobot(wpilib.TimedRobot):
         else:
             self.drive.driveCartesian(0, 0, 0, 0)
         
-        print(self.r_encoder.get())
+        print(self.l_encoder.get())
 
     def teleopPeriodic(self):
         """Called when operation control mode is enabled"""

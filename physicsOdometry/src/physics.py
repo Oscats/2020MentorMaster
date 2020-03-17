@@ -42,11 +42,17 @@ class PhysicsEngine:
 
         self.drivetrain = drivetrains.MecanumDrivetrain()
         # Precompute the encoder constant
-        self.leftEncoder = hal.simulation.EncoderSim(0)
-        self.rightEncoder = hal.simulation.EncoderSim(1)
+        self.frontLeftEncoder = hal.simulation.EncoderSim(0)
+        self.rearLeftEncoder = hal.simulation.EncoderSim(1)
+        self.frontRightEncoder = hal.simulation.EncoderSim(2)
+        self.rearRightEncoder = hal.simulation.EncoderSim(3)
+        
         # -> encoder counts per revolution / wheel circumference
-        self.leftEncoder.setDistancePerPulse((360 / (0.5 * math.pi)))
-        self.rightEncoder.setDistancePerPulse((360 / (0.5 * math.pi)))
+        self.encoderDistanceCalculation = (360 / (0.5 * math.pi))
+        self.frontLeftEncoderDistance = 0
+        self.rearLeftEncoderDistance = 0
+        self.frontRightEncoderDistance = 0
+        self.rearRightEncoderDistance = 0
 
 
     def update_sim(self, now, tm_diff):
@@ -68,8 +74,17 @@ class PhysicsEngine:
         speeds = self.drivetrain.calculate(lf_motor, lr_motor, rf_motor, rr_motor)
         pose = self.physics_controller.drive(speeds, tm_diff)
         # Update encoders
-        self.leftEncoder.getCount()
-        self.rightEncoder.getCount()
+
+        self.frontLeftEncoderDistance += self.drivetrain.wheelSpeeds.frontLeft
+        self.rearLeftEncoderDistance += self.drivetrain.wheelSpeeds.rearLeft
+        self.frontRightEncoderDistance += self.drivetrain.wheelSpeeds.frontRight
+        self.rearRightEncoderDistance += self.drivetrain.wheelSpeeds.rearRight
+        
+
+        self.frontLeftEncoder.setCount (int(self.encoderDistanceCalculation * self.frontLeftEncoderDistance ))
+        self.rearLeftEncoder.setCount (int(self.encoderDistanceCalculation * self.rearLeftEncoderDistance ))
+        self.frontRightEncoder.setCount (int(self.encoderDistanceCalculation * self.frontRightEncoderDistance ))
+        self.rearRightEncoder.setCount (int(self.encoderDistanceCalculation * self.rearRightEncoderDistance ))
 
         # Update the gyro simulation
         # -> FRC gyros are positive clockwise, but the returned pose is positive
