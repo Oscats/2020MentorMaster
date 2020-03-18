@@ -57,6 +57,8 @@ class MyRobot(wpilib.TimedRobot):
         # Creat our kinematics object using the wheel locations.
         self.m_kinematics = MecanumDriveKinematics(
         m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation)
+        # Create the Odometry Object
+        self.MecanumDriveOdometry = MecanumDriveOdometry(self.m_kinematics,Rotation2d.fromDegrees(-self.gyro.getAngle()), Pose2d(0, 0,Rotation2d(0)))
 
         self.drive = MecanumDrive(
             self.frontLeftMotor,
@@ -64,15 +66,37 @@ class MyRobot(wpilib.TimedRobot):
             self.frontRightMotor,
             self.rearRightMotor,
         )
-        self.l_encoder = wpilib.Encoder(0,1)
-        self.l_encoder.setDistancePerPulse(
+        self.f_l_encoder = wpilib.Encoder(0,1)
+        self.f_l_encoder.setDistancePerPulse(
             (math.pi * self.WHEEL_DIAMETER) / self.ENCODER_COUNTS_PER_REV
         )
 
-        self.r_encoder = wpilib.Encoder(1,2)
-        self.r_encoder.setDistancePerPulse(
+        self.r_l_encoder = wpilib.Encoder(3,4)
+        self.r_l_encoder.setDistancePerPulse(
             (math.pi * self.WHEEL_DIAMETER) / self.ENCODER_COUNTS_PER_REV
         )
+
+        self.f_r_encoder = wpilib.Encoder(1,2)
+        self.f_r_encoder.setDistancePerPulse(
+            (math.pi * self.WHEEL_DIAMETER) / self.ENCODER_COUNTS_PER_REV
+        )
+
+        self.r_r_encoder = wpilib.Encoder(3,4)
+        self.r_r_encoder.setDistancePerPulse(
+            (math.pi * self.WHEEL_DIAMETER) / self.ENCODER_COUNTS_PER_REV
+        )
+    
+    def robotPeriodic(self):
+        #Odometry Update
+        #First, get the wheel speeds...
+        self.wheelSpeeds = MecanumDriveWheelSpeeds(
+            self.f_l_encoder.getRate(), self.r_l_encoder.getRate(),
+            self.f_r_encoder.getRate(), self.r_r_encoder.getRate())
+        #Next, we need to grab the Gyro angle and send it into the odometry.  It must be inverted because gyros v Wpilib are backwards
+        gyroAngle = Rotation2d.fromDegrees(-self.gyro.getAngle())
+        #Finally, we can update the pose...
+        self.m_pose = self.MecanumDriveOdometry.update(gyroAngle, self.wheelSpeeds)
+
 
 
     def disabled(self):
@@ -89,9 +113,10 @@ class MyRobot(wpilib.TimedRobot):
         if self.timer.get() < 2.0:
             self.drive.driveCartesian(0, 1, 0, 0)
         else:
-            self.drive.driveCartesian(0, 0, 0, 0)
+            self.drive.driveCartesian(0, 0, 1, 0)
         
-        print(self.l_encoder.get())
+        print(float(self.f_l_encoder.getRate()))
+        
 
     def teleopPeriodic(self):
         """Called when operation control mode is enabled"""
