@@ -46,14 +46,13 @@ class PhysicsEngine:
         self.rearLeftEncoder = hal.simulation.EncoderSim(1)
         self.frontRightEncoder = hal.simulation.EncoderSim(2)
         self.rearRightEncoder = hal.simulation.EncoderSim(3)
-        
+
         # -> encoder counts per revolution / wheel circumference
-        self.encoderDistanceCalculation = (360 / (0.5 * math.pi))
+        self.encoderDistanceCalculation = 360 / (0.5 * math.pi)
         self.frontLeftEncoderDistance = 0
         self.rearLeftEncoderDistance = 0
         self.frontRightEncoderDistance = 0
         self.rearRightEncoderDistance = 0
-
 
     def update_sim(self, now, tm_diff):
         """
@@ -79,12 +78,19 @@ class PhysicsEngine:
         self.rearLeftEncoderDistance += self.drivetrain.wheelSpeeds.rearLeft
         self.frontRightEncoderDistance += self.drivetrain.wheelSpeeds.frontRight
         self.rearRightEncoderDistance += self.drivetrain.wheelSpeeds.rearRight
-        
 
-        self.frontLeftEncoder.setCount (int(self.encoderDistanceCalculation * self.frontLeftEncoderDistance ))
-        self.rearLeftEncoder.setCount (int(self.encoderDistanceCalculation * self.rearLeftEncoderDistance ))
-        self.frontRightEncoder.setCount (int(self.encoderDistanceCalculation * self.frontRightEncoderDistance ))
-        self.rearRightEncoder.setCount (int(self.encoderDistanceCalculation * self.rearRightEncoderDistance ))
+        self.frontLeftEncoder.setCount(
+            int(self.encoderDistanceCalculation * self.frontLeftEncoderDistance)
+        )
+        self.rearLeftEncoder.setCount(
+            int(self.encoderDistanceCalculation * self.rearLeftEncoderDistance)
+        )
+        self.frontRightEncoder.setCount(
+            int(self.encoderDistanceCalculation * self.frontRightEncoderDistance)
+        )
+        self.rearRightEncoder.setCount(
+            int(self.encoderDistanceCalculation * self.rearRightEncoderDistance)
+        )
 
         # Update the gyro simulation
         # -> FRC gyros are positive clockwise, but the returned pose is positive
