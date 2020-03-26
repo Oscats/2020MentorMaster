@@ -51,7 +51,7 @@ class MyRobot(wpilib.TimedRobot):
         self.timer.start()
 
     def autonomousPeriodic(self):
-        print(((self.rightEncoder.getDistance())))
+        print(self.rightEncoder.getRate())
         if self.timer.get() < 2.0:
             self.drive.arcadeDrive(1.0, 0.0)
         else:
