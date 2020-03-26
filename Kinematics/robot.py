@@ -62,16 +62,20 @@ class MyRobot(wpilib.TimedRobot):
         # Example chassis speeds: 1 meter per second forward, 3 meters
         # per second to the left, and rotation at 1.5 radians per second
         # counterclockwise.
-        #speeds = ChassisSpeeds(1.0, 3.0, 1.5)
+        preChassis = ChassisSpeeds()
+        preChassis.vx = 1.0
+        preChassis.vy = 0.0
+        preChassis.omega = 0.0
+        
 
         # Convert to wheel speeds
-        #wheelSpeeds = MecanumDriveKinematics.toWheelSpeeds(speeds)
+        wheelSpeeds = MecanumDriveKinematics.toWheelSpeeds(preChassis)
 
         # Get the individual wheel speeds
-        #frontLeft = wheelSpeeds.frontLeftMetersPerSecond
-        #frontRight = wheelSpeeds.frontRightMetersPerSecond
-        #backLeft = wheelSpeeds.rearLeftMetersPerSecond
-        #backRight = wheelSpeeds.rearRightMetersPerSecond
+        frontLeft = wheelSpeeds.frontLeftMetersPerSecond
+        frontRight = wheelSpeeds.frontRightMetersPerSecond
+        backLeft = wheelSpeeds.rearLeftMetersPerSecond
+        backRight = wheelSpeeds.rearRightMetersPerSecond
 
         # Field Oriented Drive
         # The desired field relative speed here is 2 meters per second
