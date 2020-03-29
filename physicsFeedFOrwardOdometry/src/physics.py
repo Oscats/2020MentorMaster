@@ -48,7 +48,7 @@ class PhysicsEngine:
         self.rearRightEncoder = hal.simulation.EncoderSim(3)
 
         # -> encoder counts per revolution / wheel circumference
-        self.encoderDistanceCalculation = 360 / (0.5 * math.pi)
+        self.encoderDistanceCalculation = 360 * 4 / (0.5 * math.pi)
         self.frontLeftEncoderDistance = 0
         self.rearLeftEncoderDistance = 0
         self.frontRightEncoderDistance = 0
@@ -74,23 +74,29 @@ class PhysicsEngine:
         pose = self.physics_controller.drive(speeds, tm_diff)
         # Update encoders
 
-        self.frontLeftEncoderDistance += self.drivetrain.wheelSpeeds.frontLeft
-        self.rearLeftEncoderDistance += self.drivetrain.wheelSpeeds.rearLeft
-        self.frontRightEncoderDistance += self.drivetrain.wheelSpeeds.frontRight
-        self.rearRightEncoderDistance += self.drivetrain.wheelSpeeds.rearRight
+        self.frontLeftEncoderDistance += self.drivetrain.wheelSpeeds.frontLeft * tm_diff
+        self.rearLeftEncoderDistance += self.drivetrain.wheelSpeeds.rearLeft * tm_diff
+        self.frontRightEncoderDistance += (
+            self.drivetrain.wheelSpeeds.frontRight * tm_diff
+        )
+        self.rearRightEncoderDistance += self.drivetrain.wheelSpeeds.rearRight * tm_diff
 
         self.frontLeftEncoder.setCount(
             int(self.encoderDistanceCalculation * self.frontLeftEncoderDistance)
         )
+        self.frontLeftEncoder.setPeriod(0.5)
         self.rearLeftEncoder.setCount(
             int(self.encoderDistanceCalculation * self.rearLeftEncoderDistance)
         )
+        self.rearLeftEncoder.setPeriod(0.5)
         self.frontRightEncoder.setCount(
             int(self.encoderDistanceCalculation * self.frontRightEncoderDistance)
         )
+        self.frontRightEncoder.setPeriod(0.5)
         self.rearRightEncoder.setCount(
             int(self.encoderDistanceCalculation * self.rearRightEncoderDistance)
         )
+        self.rearRightEncoder.setPeriod(0.5)
 
         # Update the gyro simulation
         # -> FRC gyros are positive clockwise, but the returned pose is positive

@@ -26,6 +26,8 @@ class PhysicsEngine:
     def __init__(self, physics_controller: PhysicsInterface):
 
         self.physics_controller = physics_controller
+    
+
 
         # Motors
         self.l_motor = hal.simulation.PWMSim(1)
@@ -61,7 +63,7 @@ class PhysicsEngine:
         self.LeftEncoder = hal.simulation.EncoderSim(0)
         self.RightEncoder = hal.simulation.EncoderSim(1)
         # -> encoder counts per revolution / wheel circumference
-        self.encoderDistanceCalculation = 360 / (0.5 * math.pi)
+        self.encoderDistanceCalculation = 360*4 / (0.5 * math.pi)
         self.LeftEncoderDistance = 0
         self.RightEncoderDistance = 0
 
@@ -115,6 +117,8 @@ class PhysicsEngine:
         self.LeftEncoder.setCount(
             int(self.encoderDistanceCalculation * self.LeftEncoderDistance)
         )
+        self.LeftEncoder.setPeriod(.05)
+        
         self.RightEncoder.setCount(
             int(self.encoderDistanceCalculation * self.RightEncoderDistance)
         )

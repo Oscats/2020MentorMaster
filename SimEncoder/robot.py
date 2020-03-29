@@ -3,13 +3,14 @@ import math
 
 import wpilib
 import wpilib.drive
+import hal.simulation
 
 
 
 
 class MyRobot(wpilib.TimedRobot):
     """Main robot class"""
-    GEAR_RATIO = 10.75
+    GEAR_RATIO = 10.71
     WHEEL_DIAMETER = 0.5 * math.pi
     ENCODER_COUNTS_PER_REV = 360
 
@@ -36,12 +37,13 @@ class MyRobot(wpilib.TimedRobot):
 
         self.leftEncoder = wpilib.Encoder(0, 1)
         self.leftEncoder.setDistancePerPulse(
-            ( self.WHEEL_DIAMETER*self.GEAR_RATIO) / self.ENCODER_COUNTS_PER_REV
+            ( self.WHEEL_DIAMETER) / self.ENCODER_COUNTS_PER_REV
         )
+        self.leftEncoder.setSimDevice(0)
 
         self.rightEncoder = wpilib.Encoder(3, 4)
         self.rightEncoder.setDistancePerPulse(
-            (self.WHEEL_DIAMETER*self.GEAR_RATIO) / self.ENCODER_COUNTS_PER_REV
+            (self.WHEEL_DIAMETER) / self.ENCODER_COUNTS_PER_REV
         )
 
     def autonomousInit(self):
@@ -49,13 +51,24 @@ class MyRobot(wpilib.TimedRobot):
 
         self.timer = wpilib.Timer()
         self.timer.start()
+        self.oldTime=0.0
+        self.oldDistance=0.0
 
     def autonomousPeriodic(self):
-        print(self.rightEncoder.getRate())
+        newTime = self.timer.get()
+        newDistance = self.leftEncoder.getDistance()
+        speed = ((newDistance-self.oldDistance)/(newTime-self.oldTime))
+        print(speed)
+        print("Rate: " +str(self.leftEncoder.getRate()))
+        print("distance: " + str(self.leftEncoder.getDistance()))
+        print("time: " +str(self.timer.get()))
+        print("RightRate: " +str((self.rightEncoder.getRate()/100000)))
         if self.timer.get() < 2.0:
             self.drive.arcadeDrive(1.0, 0.0)
         else:
             self.drive.arcadeDrive(0, 0)
+        self.oldDistance = newDistance
+        self.oldTime=newTime
 
     def teleopPeriodic(self):
         """Called when operation control mode is enabled"""

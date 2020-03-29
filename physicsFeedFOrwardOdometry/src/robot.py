@@ -16,7 +16,7 @@ from wpilib.kinematics import (
 GEAR_RATIO = 10.75
 # measurements in metres
 TRACK_WIDTH = 0.579  # measured by characterisation
-WHEEL_CIRCUMFERENCE = 0.0254 * 6 * math.pi
+WHEEL_CIRCUMFERENCE = 0.5 * math.pi
 XOffset = 0.288
 YOffset = 0.257
 
@@ -33,7 +33,7 @@ class MyRobot(wpilib.TimedRobot):
     # The channel on the driver station that the joystick is connected to
     lStickChannel = 0
     rStickChannel = 1
-    WHEEL_DIAMETER = 0.5  # 6 inches
+    WHEEL_DIAMETER = 0.5 * math.pi  # 6 inches
     ENCODER_COUNTS_PER_REV = 360
 
     def robotInit(self):
@@ -82,32 +82,56 @@ class MyRobot(wpilib.TimedRobot):
         )
         self.f_l_encoder = wpilib.Encoder(0, 1)
         self.f_l_encoder.setDistancePerPulse(
-            (math.pi * self.WHEEL_DIAMETER) / self.ENCODER_COUNTS_PER_REV
+            (self.WHEEL_DIAMETER) / self.ENCODER_COUNTS_PER_REV
         )
 
         self.r_l_encoder = wpilib.Encoder(3, 4)
         self.r_l_encoder.setDistancePerPulse(
-            (math.pi * self.WHEEL_DIAMETER) / self.ENCODER_COUNTS_PER_REV
+            (self.WHEEL_DIAMETER) / self.ENCODER_COUNTS_PER_REV
         )
 
         self.f_r_encoder = wpilib.Encoder(1, 2)
         self.f_r_encoder.setDistancePerPulse(
-            (math.pi * self.WHEEL_DIAMETER) / self.ENCODER_COUNTS_PER_REV
+            (self.WHEEL_DIAMETER) / self.ENCODER_COUNTS_PER_REV
         )
 
         self.r_r_encoder = wpilib.Encoder(3, 4)
         self.r_r_encoder.setDistancePerPulse(
-            (math.pi * self.WHEEL_DIAMETER) / self.ENCODER_COUNTS_PER_REV
+            (self.WHEEL_DIAMETER) / self.ENCODER_COUNTS_PER_REV
         )
 
+        self.timer = wpilib.Timer()
+        self.timer.start()
+
+        self.oldTime = 0.0
+        self.f_l_oldDistance = 0.0
+        self.r_l_oldDistance = 0.0
+        self.f_r_oldDistance = 0.0
+        self.r_r_oldDistance = 0.0
+
     def robotPeriodic(self):
+        newTime = self.timer.get()
+        f_l_rate = (self.f_l_encoder.getDistance() - self.f_l_oldDistance) / (
+            newTime - self.oldTime
+        )
+        r_l_rate = (self.r_l_encoder.getDistance() - self.r_l_oldDistance) / (
+            newTime - self.oldTime
+        )
+        f_r_rate = (self.f_r_encoder.getDistance() - self.f_r_oldDistance) / (
+            newTime - self.oldTime
+        )
+        r_r_rate = (self.r_r_encoder.getDistance() - self.r_r_oldDistance) / (
+            newTime - self.oldTime
+        )
+        self.oldTime = newTime
+        self.f_l_oldDistance = self.f_l_encoder.getDistance()
+        self.r_l_oldDistance = self.r_l_encoder.getDistance()
+        self.f_r_oldDistance = self.f_r_encoder.getDistance()
+        self.r_r_oldDistance = self.r_r_encoder.getDistance()
         # Odometry Update
         # First, get the wheel speeds...
         self.wheelSpeeds = MecanumDriveWheelSpeeds(
-            self.f_l_encoder.getRate(),
-            self.r_l_encoder.getRate(),
-            self.f_r_encoder.getRate(),
-            self.r_r_encoder.getRate(),
+            f_l_rate, r_l_rate, f_r_rate, r_r_rate,
         )
         # Next, we need to grab the Gyro angle and send it into the odometry.  It must be inverted because gyros v Wpilib are backwards
         gyroAngle = Rotation2d.fromDegrees(-self.gyro.getAngle())
@@ -116,6 +140,8 @@ class MyRobot(wpilib.TimedRobot):
 
     def disabled(self):
         """Called when the robot is disabled"""
+
+        self.drive.driveCartesian(0, 0, 0, 0)
         while self.isDisabled():
             wpilib.Timer.delay(0.01)
 
@@ -125,12 +151,20 @@ class MyRobot(wpilib.TimedRobot):
         self.timer.start()
 
     def autonomousPeriodic(self):
-        if self.timer.get() < 2.0:
-            self.drive.driveCartesian(0, 1, 0, 0)
-        else:
-            self.drive.driveCartesian(0, 0, 1, 0)
 
-        print(float(self.f_l_encoder.getRate()))
+        # Odometry Update
+        # First, get the wheel speeds...
+        print("WHeelSpeed = " + str(self.wheelSpeeds.frontLeft))
+        targetSpeed = 5
+        currentSpeed = self.wheelSpeeds.frontLeft
+        error = (targetSpeed - currentSpeed) / 6
+        if self.timer.get() < 2.0:
+            self.drive.driveCartesian(0, error, 0, 0)
+        elif self.timer.get() < 4.0:
+            self.drive.driveCartesian(0, 0, error, 0)
+        else:
+            self.drive.driveCartesian(0, 0, 0, 0)
+        print("Gyro Angle = " + str(-self.gyro.getAngle()))
 
     def teleopPeriodic(self):
         """Called when operation control mode is enabled"""
